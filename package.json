@@ -1,0 +1,9 @@
+{
+  "name": "hiso-dm-bot",
+  "version": "1.0.0",
+  "description": "High Society Club Cebu - Instagram DM booking bot, live test version",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
