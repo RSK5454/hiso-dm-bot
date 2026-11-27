@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>High Society DM Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+.pinbox[hidden]{display:none}.pinbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:grid;place-items:center;z-index:9;padding:16px}.pinbox form{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:340px;width:100%;display:grid;gap:12px}.pinbox input{background:#0f0f11;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:16px}
+
+/* VOICE: a confident product demo from Akshaara Group, nightlife after dark.
+   IDEA: the guest's phone on the left, the club's back office on the right, both live.
+   PICTURE: the Instagram DM phone, and a floor map of tables lighting up as bookings land.
+   COLOUR and TYPE: Akshaara gold #D6B062 on black, soft white text; Instrument Serif + Inter.
+   LAYOUT: phone | staff desk side by side; stacks on phones: title, phone, staff desk. */
+:root{color-scheme:dark;--bg:#0B0B0C;--panel:#141416;--panel2:#1b1b1e;--line:#2b2b30;--gold:#D6B062;--ink:#E4DED2;--mute:#9b968c;
+--free:#2f6b43;--pend:#9c7424;--conf:#8f3a35;--closed:#3a3a3e;--blue:#3797F0}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;color:var(--gold);margin:0;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(34px,5vw,52px)}h2{font-size:26px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--panel2);padding:10px 14px;min-height:44px}
+button:hover{border-color:var(--gold)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button.gold{background:var(--gold);color:#111;border-color:var(--gold);font-weight:500}
+button:disabled{opacity:.45;cursor:not-allowed}
+.top{padding:28px max(4vw,16px) 8px;max-width:1320px;margin:auto;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between}
+.top p{margin:8px 0 0;color:var(--mute);max-width:62ch}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:14px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mute)}.pill.live .dot{background:#4cc26e}
+.wrap{max-width:1320px;margin:auto;padding:16px max(4vw,16px) 48px;display:grid;grid-template-columns:400px minmax(0,1fr);gap:28px;align-items:start}
+@media(max-width:960px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.tries{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.tries::-webkit-scrollbar{display:none}@media(max-width:600px){.tries{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px}.tries button{white-space:nowrap;flex:none}}
+.tries button{font-size:14px;padding:8px 12px;min-height:40px;border-radius:99px}
+.phone{background:#000;border:1px solid var(--line);border-radius:36px;padding:10px;height:660px;display:flex;flex-direction:column;box-shadow:0 30px 80px -30px rgba(214,176,98,.25);max-width:400px;margin-inline:auto;width:100%}
+.ig{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #1f1f1f}
+.av{width:36px;height:36px;border-radius:50%;padding:2px;background:conic-gradient(#f9ce34,#ee2a7b,#6228d7,#f9ce34);flex:none}
+.av span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#0B0B0C;color:var(--gold);font:500 12px Inter}
+.ig b{font-weight:600;font-size:15px;display:block}.ig small{color:#a8a8a8;font-size:13px}
+.ig select{margin-left:auto;background:#121212;border:1px solid #262626;border-radius:8px;padding:6px;font-size:14px;max-width:130px}
+.msgs{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth}
+.b{max-width:80%;padding:9px 13px;border-radius:20px;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:400}
+.g{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.bot,.staff{align-self:flex-start;background:#262626;color:#f5f5f5;border-bottom-left-radius:6px}
+.staff{background:#2c2618;border:1px solid #4a3d1f}
+.who{font-size:11px;color:#8e8e8e;margin:6px 4px 0;align-self:flex-start}.who.r{align-self:flex-end}
+.note{align-self:center;font-size:13px;color:#a8a8a8;background:#121212;border:1px solid #222;border-radius:12px;padding:6px 10px;text-align:center;margin:6px 0}
+.qr{align-self:flex-start;background:#fff;color:#111;border-radius:18px;padding:12px;width:210px;font-size:13px;line-height:1.3}
+.qr svg{width:100%;height:auto;display:block;margin:6px 0}
+.photo{align-self:flex-end;width:150px;height:190px;border-radius:16px;background:linear-gradient(160deg,#e9f3ff,#cfe3fb);color:#0a3d7a;display:grid;place-items:center;text-align:center;font:500 13px Inter;padding:10px}
+.typing{align-self:flex-start;background:#262626;border-radius:20px;padding:12px 14px;display:flex;gap:4px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8e8e8e;animation:t 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes t{50%{opacity:.25}}@media(prefers-reduced-motion:reduce){.typing i{animation:none}.msgs{scroll-behavior:auto}}
+.compose{display:flex;gap:6px;align-items:center;padding:8px;border-top:1px solid #1f1f1f}
+.compose input{flex:1;background:#121212;border:1px solid #262626;border-radius:22px;padding:10px 14px;font-size:16px;min-height:44px}
+.compose button{border-radius:22px;background:#121212;border-color:#262626;padding:8px 12px}
+.compose .send{color:var(--blue);font-weight:600;border:0;background:none}
+.under{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.desk{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--line)}
+.tabs button{border:0;border-radius:0;background:none;padding:14px 18px;color:var(--mute);white-space:nowrap;border-bottom:2px solid transparent}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--gold);font-weight:500}
+.tabs .n[hidden]{display:none}.tabs .n{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:99px;background:var(--gold);color:#111;font-size:12px;font-weight:600}
+.pane{padding:20px clamp(14px,2.5vw,26px) 26px}.pane[hidden]{display:none}
+.lead{color:var(--mute);margin:4px 0 16px;font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:500;color:var(--mute);padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid #222226;vertical-align:top}
+td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.st{display:inline-block;padding:2px 9px;border-radius:99px;font-size:13px;white-space:nowrap;font-weight:500}
+.s-Pending{background:#3a2f16;color:#f0c674}.s-Deposit{background:#2d2a17;color:#e8d27a}.s-Confirmed{background:#173a24;color:#8fe0a8}
+.s-Open{background:#3a2f16;color:#f0c674}.s-Done{background:#22252a;color:#9aa3ad}.s-PRIORITY{background:#4a1d1a;color:#ff9b91}
+.act{display:flex;gap:6px;flex-wrap:wrap}.act button{min-height:36px;padding:6px 10px;font-size:13px}
+.demo-tag{font-size:12px;color:var(--mute)}
+.scroll{overflow-x:auto}td.num .demo-tag{white-space:normal;max-width:9em;margin-left:auto}
+.empty{color:var(--mute);padding:18px 0}
+.reply{display:flex;gap:6px;margin-top:8px}.reply input{flex:1;background:#0f0f11;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:16px}
+.floorhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.floorhead select{background:#0f0f11;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:44px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.area{margin:14px 0 4px;font-size:14px;color:var(--gold);font-weight:500}
+.grid{display:flex;flex-wrap:wrap;gap:6px}
+.tb{border-radius:10px;padding:8px 10px;font-size:13px;min-width:62px;text-align:center;border:1px solid transparent;line-height:1.25}
+.tb small{display:block;opacity:.8;font-size:11px}
+.tb.Free{background:#15291c;border-color:var(--free)}.tb.Pending{background:#2e2410;border-color:var(--pend)}.tb.Confirmed{background:#2d1513;border-color:var(--conf)}.tb.Closed{background:#1c1c1f;border-color:var(--closed);color:var(--mute)}
+.tb.flash{animation:fl 1.6s}@keyframes fl{0%{box-shadow:0 0 0 0 var(--gold)}30%{box-shadow:0 0 0 6px rgba(214,176,98,.5)}100%{box-shadow:0 0 0 0 transparent}}
+@media(prefers-reduced-motion:reduce){.tb.flash{animation:none}}
+.kb{white-space:pre-wrap;font-size:14px;line-height:1.6;background:#0f0f11;border:1px solid var(--line);border-radius:12px;padding:16px;max-height:560px;overflow-y:auto}
+.changes{margin:0 0 18px;padding-left:20px;font-size:15px}.changes li{margin:4px 0}
+.ask{color:#f0c674}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--gold);color:#111;padding:10px 16px;border-radius:12px;font-weight:500;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+footer{max-width:1320px;margin:auto;padding:0 max(4vw,16px) 36px;color:var(--mute);font-size:13px}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid #222226}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;color:var(--mute)}.stack td:empty{display:none}.phone{height:600px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>High Society DM Bot</h1>
+    <p>Live test of the Instagram booking assistant. Chat as a guest on the left; the real AI answers. Bookings, deposits and handovers land on the staff desk on the right.</p>
+  </div>
+  <span class="pill" id="mode"><span class="dot"></span><span id="modeTxt">Connecting…</span></span>
+</header>
+
+<main class="wrap">
+  <section aria-label="Guest phone">
+    <div class="tries" id="tries"></div>
+    <div class="phone">
+      <div class="ig">
+        <div class="av"><span>HS</span></div>
+        <div><b>High Society Club Cebu</b><small>@highsocietycebu</small></div>
+        <select id="chatSel" aria-label="Guest chat"></select>
+      </div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <form class="compose" id="form">
+        <button type="button" id="photoBtn" title="Send payment screenshot" aria-label="Send payment screenshot">📷</button>
+        <input id="inp" autocomplete="off" placeholder="Message…" aria-label="Message" maxlength="500">
+        <button class="send" id="sendBtn">Send</button>
+      </form>
+    </div>
+    <div class="under">
+      <button id="newChat">New guest chat</button>
+      <button id="resetAll">Reset demo</button>
+    </div>
+  </section>
+
+  <section class="desk" aria-label="Staff desk">
+    <div class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-p="book" aria-selected="true">Reservations<span class="n" id="nBook" hidden></span></button>
+      <button role="tab" data-p="hand" aria-selected="false">Handovers<span class="n" id="nHand" hidden></span></button>
+      <button role="tab" data-p="floor" aria-selected="false">Availability</button>
+      <button role="tab" data-p="rules" aria-selected="false">Bot rules</button>
+    </div>
+    <div class="pane" id="p-book">
+      <h2>Reservations</h2>
+      <p class="lead">The bot creates rows as Pending. Only staff can confirm, after the guest's payment proof comes in as a handover.</p>
+      <div id="bookList"></div>
+    </div>
+    <div class="pane" id="p-hand" hidden>
+      <h2>Handovers</h2>
+      <p class="lead">Chats the bot passed to staff. Replying here takes the chat over for good: the bot goes silent in that chat.</p>
+      <div id="handList"></div>
+    </div>
+    <div class="pane" id="p-floor" hidden>
+      <h2>Availability</h2>
+      <div class="floorhead">
+        <select id="floorDate" aria-label="Night"></select>
+        <div class="legend"><span><i style="background:var(--free)"></i>Free</span><span><i style="background:var(--pend)"></i>Pending</span><span><i style="background:var(--conf)"></i>Confirmed</span></div>
+      </div>
+      <div id="floor"></div>
+    </div>
+    <div class="pane" id="p-rules" hidden>
+      <h2>What the bot knows</h2>
+      <p class="lead">This is the exact text the bot works from. What changed from the 13 Nov version:</p>
+      <ul class="changes" id="changes"></ul>
+      <div class="kb" id="kb"></div>
+    </div>
+  </section>
+</main>
+<footer>Built by Akshaara Group for High Society Club Cebu. Test version: bookings marked "sample" are made up, the QR code cannot take payment, and everything resets when the server restarts. <a href="/privacy" style="color:var(--gold)">Privacy</a></footer>
+<div class="toast" id="toast" role="status"></div>
+<div class="pinbox" id="pinbox" hidden><form id="pinForm"><h2>Enter demo code</h2><input id="pinInp" inputmode="numeric" autocomplete="off" aria-label="Demo code"><button class="gold">Open demo</button><small id="pinErr" class="demo-tag"></small></form></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+const DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fromIso=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null};
+const nice=d=>`${DN[d.getUTCDay()]} ${d.getUTCDate()} ${MN[d.getUTCMonth()]}`;
+const isOpen=d=>[0,4,5,6].includes(d.getUTCDay());
+const peso=n=>"₱"+Number(n).toLocaleString("en-US");
+let C=null, ST=null, chatId=store.get("hs_chat"), pin=store.get("hs_pin")||"", sending=false, pending=null;
+const ACTIVE=["Pending","Deposit sent","Confirmed"];
+const rate=(d,key)=>C.prices[key][d.getUTCDay()===4?1:0];
+
+async function api(path,body){
+  const r=await fetch(path,{method:body?"POST":"GET",headers:{"content-type":"application/json","x-demo-pin":pin},body:body?JSON.stringify(body):undefined});
+  if(r.status===401){askPin();throw new Error("pin")}
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Error");return j;
+}
+function askPin(msg){$("pinbox").hidden=false;$("pinErr").textContent=msg||"";$("pinInp").focus()}
+$("pinForm").onsubmit=async e=>{e.preventDefault();pin=$("pinInp").value.trim();store.set("hs_pin",pin);
+  try{await api("/api/state");$("pinbox").hidden=true;await start()}catch{askPin("That code didn't work.")}};
+
+function qrSvg(seed){let s=0;for(const c of seed)s=(s*31+c.charCodeAt(0))>>>0;const rnd=()=>(s=(s*1103515245+12345)>>>0)/4294967296;
+  let r='';for(let y=0;y<21;y++)for(let x=0;x<21;x++){const f=(x<7&&y<7)||(x>13&&y<7)||(x<7&&y>13);
+  if(f){const o=x>13?14:0,p=y>13?14:0,a=x-o,b=y-p;if(a===0||a===6||b===0||b===6||(a>1&&a<5&&b>1&&b<5))r+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}
+  else if(rnd()>.5)r+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}
+  return `<svg viewBox="-1 -1 23 23" aria-label="Sample QR code">${r}</svg>`}
+
+function drawMsgs(){
+  const box=$("msgs");box.textContent="";
+  const msgs=(ST&&ST.chat?ST.chat.msgs:[]).concat(pending?[pending]:[]);
+  if(!msgs.length)box.append(el("div","note","Send a message as a guest, or tap one of the examples above."));
+  let last="";
+  for(const m of msgs){
+    if(m.k==="g"){if(last!=="g")box.append(el("div","who r","Guest"));box.append(el("div","b g",m.t))}
+    else if(m.k==="bot"){if(last!=="bot")box.append(el("div","who","AI bot"));box.append(el("div","b bot",m.t))}
+    else if(m.k==="staff"){if(last!=="staff")box.append(el("div","who","Staff"));box.append(el("div","b staff",m.t))}
+    else if(m.k==="note")box.append(el("div","note",m.t));
+    else if(m.k==="photo")box.append(el("div","photo","📄 Payment screenshot\nInstaPay"+(m.t?" · "+m.t:"")));
+    else if(m.k==="qr"){const q=el("div","qr");q.append(el("b",null,"InstaPay deposit"));const w=el("div");w.innerHTML=qrSvg(String(m.id));q.append(w);
+      q.append(el("div",null,`High Society Club OPC · ${peso(m.amt)}`));q.append(el("div","demo-tag",`${m.id} · test QR, not payable`));box.append(q)}
+    last=m.k;
+  }
+  if(sending||(ST&&ST.chat&&ST.chat.busy)){const t=el("div","typing");t.innerHTML="<i></i><i></i><i></i>";box.append(t)}
+  box.scrollTop=box.scrollHeight;
+}
+function labels(t){const hs=[...t.querySelectorAll("th")].map(h=>h.textContent);t.querySelectorAll("tbody tr").forEach(r=>[...r.cells].forEach((c,i)=>c.dataset.l=hs[i]||""))}
+function td(tr,txt,cls){const c=el("td",cls,txt);tr.append(c);return c}
+const chatName=id=>{const c=ST.chats.find(x=>x.id===id);return c?c.name:"Guest"};
+
+function render(){
+  if(!ST||!C)return;
+  const s=$("chatSel");s.textContent="";
+  for(const c of ST.chats){const o=el("option",null,c.name+(c.id===chatId?" (you)":"")+(c.bot?"":" · staff"));o.value=c.id;if(c.id===chatId)o.selected=true;s.append(o)}
+  drawMsgs();
+  const openH=ST.hand.filter(h=>h.status!=="Done").length,newB=ST.book.filter(b=>!b.demo&&b.status!=="Confirmed"&&ACTIVE.includes(b.status)).length;
+  $("nHand").textContent=openH;$("nHand").hidden=!openH;$("nBook").textContent=newB;$("nBook").hidden=!newB;
+  const bl=$("bookList");bl.textContent="";
+  const tb=el("table","stack"),th=el("thead"),hr=el("tr");["ID","Night","Table","Pax","Guest","Rate / deposit","Status",""].forEach(h=>hr.append(el("th",null,h)));th.append(hr);tb.append(th);
+  const bd=el("tbody");
+  for(const b of [...ST.book].sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id))){
+    const d=fromIso(b.date),r=rate(d,b.key),t=C.tables.find(x=>x.id===b.table),ex=Math.max(0,b.pax-(t?t.inc:0)),tr=el("tr");
+    const ic=td(tr,b.id);if(b.demo)ic.append(el("div","demo-tag","sample"));
+    const nc=td(tr,nice(d));if(b.time)nc.append(el("div","demo-tag",b.time));
+    td(tr,`${C.short[b.key]} ${b.table}`);const pc=td(tr,String(b.pax),"num");if(ex)pc.append(el("div","demo-tag",`+${ex} extra ${peso(ex*C.extraFee)}`));
+    td(tr,b.name+(b.gl?` (GL: ${b.gl})`:"")+(b.req?` · ${b.req}`:""));const rc=td(tr,peso(r),"num");rc.append(el("div","demo-tag",peso(r*C.deposit)+" deposit"));
+    const sc=td(tr,"");sc.append(el("span","st s-"+b.status.split(" ")[0],b.status+(b.status==="Confirmed"&&b.by?` · ${b.by}`:"")));
+    const ac=td(tr,""),w=el("div","act");
+    if(b.status!=="Confirmed"&&ACTIVE.includes(b.status)){
+      const proof=ST.hand.some(h=>h.bid===b.id&&/proof/i.test(h.reason));
+      const cf=el("button","gold","Confirm");cf.disabled=!proof;cf.title=proof?"Payment proof received: confirm":"Waiting for payment proof";
+      cf.onclick=()=>act("/api/staff/confirm",{id:b.id},`${b.id} confirmed`);w.append(cf);
+      const cx=el("button",null,"Cancel");cx.onclick=()=>act("/api/staff/cancel",{id:b.id},`${b.id} cancelled, table is free again`);w.append(cx)}
+    ac.append(w);bd.append(tr)}
+  tb.append(bd);labels(tb);const sw=el("div","scroll");sw.append(tb);bl.append(sw);
+  const hl=$("handList");hl.textContent="";
+  if(!ST.hand.length)hl.append(el("div","empty","No handovers yet. Ask about a birthday buyout, complain, or send a payment screenshot after booking."));
+  else{const t2=el("table","stack"),h2=el("thead"),r2=el("tr");["ID","Time","Reason","What the guest wants","Status"].forEach(h=>r2.append(el("th",null,h)));h2.append(r2);t2.append(h2);
+    const b2=el("tbody");
+    for(const h of [...ST.hand].reverse()){const tr=el("tr");td(tr,h.id);td(tr,h.at);const rc=td(tr,"");rc.append(el("div",null,h.reason));if(h.prio)rc.append(el("span","st s-PRIORITY","PRIORITY"));
+      const sm=td(tr,"");sm.append(el("div",null,h.summary));sm.append(el("div","demo-tag",chatName(h.chat)));
+      if(h.reply)sm.append(el("div","demo-tag","Staff replied: "+h.reply));
+      if(h.status==="Open"){const f=el("form","reply"),i=el("input");i.placeholder="Reply to guest as staff…";i.maxLength=500;i.setAttribute("aria-label","Staff reply");
+        f.append(i,el("button","gold","Send"));f.onsubmit=e=>{e.preventDefault();const v=i.value.trim();if(v)act("/api/staff/reply",{hid:h.id,text:v},"Sent. The bot is now silent in that chat.",h.chat)};sm.append(f)}
+      const sc=td(tr,"");sc.append(el("span","st s-"+(h.status==="Done"?"Done":"Open"),h.status));
+      if(h.status!=="Done"){const db=el("button",null,"Mark done");db.style.marginTop="6px";db.onclick=()=>act("/api/staff/done",{hid:h.id});sc.append(db)}
+      b2.append(tr)}
+    t2.append(b2);labels(t2);hl.append(t2)}
+  drawFloor();
+}
+function drawFloor(){
+  const sel=$("floorDate"),keep=sel.value;sel.textContent="";const today=fromIso(ST.today);
+  for(let i=0;i<14;i++){const d=new Date(today.getTime()+i*864e5);if(!isOpen(d))continue;const iso=d.toISOString().slice(0,10);const o=el("option",null,nice(d)+(i===0?" (tonight)":""));o.value=iso;sel.append(o)}
+  if(keep&&[...sel.options].some(o=>o.value===keep))sel.value=keep;
+  else{const mine=ST.book.filter(b=>b.mine).slice(-1)[0]||ST.book.find(b=>!b.demo);if(mine&&[...sel.options].some(o=>o.value===mine.date))sel.value=mine.date}
+  const date=sel.value,d=fromIso(date),f=$("floor");f.textContent="";if(!d)return;
+  for(const area of ["VIP section","Main floor","VIP Lounge"]){
+    f.append(el("div","area",area));const g=el("div","grid");
+    for(const t of C.tables.filter(t=>t.area===area)){const b=ST.book.find(x=>x.date===date&&x.table===t.id&&ACTIVE.includes(x.status));
+      const st=b?(b.status==="Confirmed"?"Confirmed":"Pending"):"Free";const c=el("div","tb "+st);
+      c.append(el("b",null,t.id));c.append(el("small",null,b?b.name.split(" ")[0]:peso(rate(d,t.key))));c.title=`${C.label[t.key]} · ${st}`;g.append(c)}
+    f.append(g)}
+}
+let tt;function toast(t){if(!t)return;const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("on"),2600)}
+async function refresh(){try{ST=await api("/api/state?chat="+encodeURIComponent(chatId||""));render();setMode(true)}catch(e){if(e.message!=="pin")setMode(false)}}
+async function act(path,body,msg,goChat){try{ST=await api(path,Object.assign({chatId},body));if(goChat){chatId=goChat;store.set("hs_chat",chatId);await refresh()}else render();toast(msg)}catch(e){toast(e.message)}}
+function setMode(ok){$("mode").classList.toggle("live",ok);$("modeTxt").textContent=ok?"Live AI bot":"Server not reachable"}
+function setBusy(){for(const id of ["sendBtn","photoBtn"])$(id).disabled=sending;document.querySelectorAll("#tries button").forEach(b=>b.disabled=sending)}
+
+async function say(payload){
+  if(sending)return;sending=true;setBusy();
+  pending=payload.photo?{k:"photo",t:payload.photoLabel||""}:{k:"g",t:payload.text};drawMsgs();
+  try{ST=await api("/api/chat",Object.assign({chatId},payload))}catch(e){if(e.message!=="pin")toast(e.message==="Still replying"?"Wait for the reply first":"Couldn't send. Check your connection.")}
+  pending=null;sending=false;setBusy();render();
+}
+async function newChat(){const r=await api("/api/new-chat",{});chatId=r.id;store.set("hs_chat",chatId);await refresh()}
+const TRY=["Table for 5 this Saturday","We're 8 on Friday, can we fit?","What's on Thursday?","How much to rent the whole place for a birthday?","How much entrance?","Here's my card number 4111 2222 3333 4444","I wasn't let in last night, why?","Open ba mo Wednesday?"];
+for(const t of TRY){const b=el("button",null,t);b.onclick=()=>say({text:t});$("tries").append(b)}
+$("form").onsubmit=e=>{e.preventDefault();const v=$("inp").value.trim();if(!v)return;$("inp").value="";say({text:v})};
+$("photoBtn").onclick=()=>{const b=ST&&ST.book.filter(x=>x.mine&&x.status==="Deposit sent").slice(-1)[0];say({photo:true,photoLabel:b?peso(rate(fromIso(b.date),b.key)*C.deposit):""})};
+$("newChat").onclick=()=>{if(!sending)newChat()};
+$("resetAll").onclick=async()=>{if(sending)return;await api("/api/reset",{});await newChat();toast("Demo reset")};
+$("chatSel").onchange=e=>{chatId=e.target.value;store.set("hs_chat",chatId);refresh()};
+$("floorDate").onchange=drawFloor;
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  for(const x of ["book","hand","floor","rules"])$("p-"+x).hidden=x!==b.dataset.p});
+
+async function start(){
+  if(!chatId)await newChat();else await refresh();
+  if(ST&&ST.chat===null)await newChat();
+  setInterval(()=>{if(!sending&&document.visibilityState==="visible")refresh()},3000);
+}
+(async()=>{
+  try{C=await fetch("/api/config").then(r=>r.json())}catch{setMode(false);return}
+  $("kb").textContent=C.kb;
+  for(const [h,t] of C.changes){const li=el("li");li.append(el("b",h==="Still to come"?"ask":null,h+": "),document.createTextNode(t));$("changes").append(li)}
+  if(C.pin&&!pin)return askPin();
+  try{await start()}catch(e){if(e.message!=="pin")setMode(false)}
+})();
+}
+</script>
+</body>
+</html>
